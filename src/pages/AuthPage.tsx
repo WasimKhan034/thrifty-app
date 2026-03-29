@@ -23,48 +23,97 @@ export function AuthPage({ currentUser, onSignUp, onSignIn }: AuthPageProps) {
     setPassword("");
   };
 
-  return (
-    <section className="panel surface auth-panel">
-      <div className="panel-head">
-        <div>
-          <p className="eyebrow">Auth</p>
-          <h3>{currentUser ? "You are signed in" : "Create an account or sign in"}</h3>
+  if (currentUser) {
+    return (
+      <div className="page-content">
+        <div className="auth-wrap">
+          <div className="auth-form surface">
+            <div className="auth-header">
+              <div className="empty-state-icon">✓</div>
+              <h3>Signed in as {currentUser.name}</h3>
+              <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: 0 }}>
+                {currentUser.email}
+                {currentUser.role === "admin" && (
+                  <span className="role-badge" style={{ marginLeft: 8 }}>admin</span>
+                )}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
+    );
+  }
 
-      <p className="panel-copy">
-        Sign in to save favorites, track visits, leave reviews, and submit new spots.
-        Admins can approve pending submissions.
-      </p>
+  return (
+    <div className="page-content">
+      <div className="auth-wrap">
+        <div className="auth-form surface">
+          <div className="auth-header">
+            <h3>{mode === "signin" ? "Welcome back" : "Create an account"}</h3>
+            <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: 0 }}>
+              {mode === "signin"
+                ? "Sign in to save favorites and leave reviews."
+                : "Join to save spots, track visits, and contribute."}
+            </p>
+          </div>
 
-      <div className="toggle-row">
-        <button type="button" className={`toggle-pill ${mode === "signin" ? "active" : ""}`} onClick={() => setMode("signin")}>
-          Sign in
-        </button>
-        <button type="button" className={`toggle-pill ${mode === "signup" ? "active" : ""}`} onClick={() => setMode("signup")}>
-          Create account
-        </button>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              type="button"
+              className={`button ${mode === "signin" ? "button-primary" : "button-secondary"}`}
+              style={{ flex: 1 }}
+              onClick={() => setMode("signin")}
+            >
+              Sign in
+            </button>
+            <button
+              type="button"
+              className={`button ${mode === "signup" ? "button-primary" : "button-secondary"}`}
+              style={{ flex: 1 }}
+              onClick={() => setMode("signup")}
+            >
+              Create account
+            </button>
+          </div>
+
+          <form className="auth-fields" onSubmit={submit}>
+            {mode === "signup" && (
+              <div className="form-field">
+                <label>Name</label>
+                <input
+                  placeholder="Your name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+            <div className="form-field">
+              <label>Email</label>
+              <input
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="form-field">
+              <label>Password</label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <button type="submit" className="button button-primary" style={{ width: "100%" }}>
+              {mode === "signup" ? "Create account →" : "Sign in →"}
+            </button>
+          </form>
+        </div>
       </div>
-
-      <form className="form-panel-inner" onSubmit={submit}>
-        {mode === "signup" ? (
-          <label>
-            <span>Name</span>
-            <input value={name} onChange={(event) => setName(event.target.value)} required />
-          </label>
-        ) : null}
-        <label>
-          <span>Email</span>
-          <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
-        </label>
-        <label>
-          <span>Password</span>
-          <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} required />
-        </label>
-        <button type="submit" className="button button-primary">
-          {mode === "signup" ? "Create account" : "Sign in"}
-        </button>
-      </form>
-    </section>
+    </div>
   );
 }

@@ -12,13 +12,13 @@ interface AppFrameProps {
 export function AppFrame({ theme, onThemeChange, currentUser, onSignOut }: AppFrameProps) {
   return (
     <div className="app-shell">
-      <header className="hero-shell surface">
+      <header className="hero-shell">
         <div className="hero-top">
           <div className="brand-lockup">
             <div className="brand-badge">T</div>
             <div>
-              <p className="eyebrow">Vintage thrift finder</p>
-              <h1>Thrifty</h1>
+              <div className="brand-name">Thrifty</div>
+              <div className="brand-sub">California vintage finder</div>
             </div>
           </div>
 
@@ -38,29 +38,20 @@ export function AppFrame({ theme, onThemeChange, currentUser, onSignOut }: AppFr
 
             {currentUser ? (
               <div className="auth-pill">
-                <span>{currentUser.name}</span>
-                <span>{currentUser.role}</span>
-                <button type="button" className="button button-ghost" onClick={onSignOut}>
+                <span className="user-name">{currentUser.name}</span>
+                {currentUser.role === "admin" && (
+                  <span className="user-role">admin</span>
+                )}
+                <button type="button" className="button button-ghost" style={{ padding: "5px 12px", fontSize: "0.78rem" }} onClick={onSignOut}>
                   Sign out
                 </button>
               </div>
             ) : (
-              <NavLink className="button button-primary" to="/auth">
+              <NavLink className="button button-primary" to="/auth" style={{ padding: "7px 16px", fontSize: "0.82rem" }}>
                 Sign in
               </NavLink>
             )}
           </div>
-        </div>
-
-        <div className="hero-copy">
-          <div>
-            <p className="eyebrow">Built for serious thrifters</p>
-            <h2>Find vintage treasure, then build your own trail.</h2>
-          </div>
-          <p>
-            Thrifty is being structured for Supabase and Vercel, with a cleaner product shape for
-            discovery, submissions, reviews, favorites, and admin approval.
-          </p>
         </div>
 
         <nav className="tab-row">
@@ -68,14 +59,16 @@ export function AppFrame({ theme, onThemeChange, currentUser, onSignOut }: AppFr
             Explore
           </NavLink>
           <NavLink to="/contribute" className={({ isActive }) => `tab-chip ${isActive ? "active" : ""}`}>
-            Contribute
+            Add / Review
           </NavLink>
           <NavLink to="/saved" className={({ isActive }) => `tab-chip ${isActive ? "active" : ""}`}>
             Saved
           </NavLink>
-          <NavLink to="/admin" className={({ isActive }) => `tab-chip ${isActive ? "active" : ""}`}>
-            Admin
-          </NavLink>
+          {currentUser?.role === "admin" && (
+            <NavLink to="/admin" className={({ isActive }) => `tab-chip ${isActive ? "active" : ""}`}>
+              Admin
+            </NavLink>
+          )}
         </nav>
       </header>
     </div>

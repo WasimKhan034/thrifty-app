@@ -7,21 +7,13 @@ interface SavedPageProps {
 
 function SpotRow({ spot, onOpenSpot }: { spot: EnrichedSpot; onOpenSpot: (id: string) => void }) {
   return (
-    <article className="review-card surface-subtle">
-      <div className="review-topline">
-        <strong>{spot.name}</strong>
-        <span>
-          {spot.city} · {spot.type}
-        </span>
+    <article className="spot-row surface">
+      <div className="spot-row-info">
+        <div className="spot-row-name">{spot.name}</div>
+        <div className="spot-row-meta">{spot.city} · {spot.type} · Score {spot.thriftScore.toFixed(1)}</div>
       </div>
-      <p className="spot-description">{spot.description}</p>
-      <div className="spot-badges">
-        <span className="badge">Score {spot.thriftScore.toFixed(1)}</span>
-        <span className="badge">{spot.reviewCount} reviews</span>
-        {spot.distance !== null ? <span className="badge">{spot.distance.toFixed(1)} mi</span> : null}
-      </div>
-      <button type="button" className="button button-secondary" onClick={() => onOpenSpot(spot.id)}>
-        Open on map
+      <button type="button" className="button button-secondary" style={{ fontSize: "0.78rem", padding: "6px 12px", flexShrink: 0 }} onClick={() => onOpenSpot(spot.id)}>
+        View on map
       </button>
     </article>
   );
@@ -29,51 +21,47 @@ function SpotRow({ spot, onOpenSpot }: { spot: EnrichedSpot; onOpenSpot: (id: st
 
 export function SavedPage({ spots, onOpenSpot }: SavedPageProps) {
   const favorites = spots.filter((s) => s.isFavorite);
-  const visitedList = spots.filter((s) => s.isVisited);
+  const visited = spots.filter((s) => s.isVisited);
 
   return (
-    <div className="saved-outer">
-      <section className="panel surface">
-        <div className="panel-head">
-          <div>
-            <p className="eyebrow">Saved</p>
-            <h3>Favorite spots</h3>
+    <div className="page-content">
+      <div className="saved-layout">
+        <section className="saved-section">
+          <div className="section-header">
+            <span className="section-title">★ Favorites</span>
+            <span className="section-count">{favorites.length}</span>
           </div>
-          <div className="panel-mini-meta">{favorites.length} saved</div>
-        </div>
-        <div className="saved-list">
-          {favorites.length ? (
-            favorites.map((spot) => (
-              <SpotRow key={spot.id} spot={spot} onOpenSpot={onOpenSpot} />
-            ))
+          {favorites.length === 0 ? (
+            <div className="empty-state surface">
+              <div className="empty-state-icon">☆</div>
+              <p>No favorites yet — tap ☆ on any spot to save it.</p>
+            </div>
           ) : (
-            <p className="panel-copy">
-              No favorites yet. Hit ☆ on any spot to save it here.
-            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {favorites.map((s) => <SpotRow key={s.id} spot={s} onOpenSpot={onOpenSpot} />)}
+            </div>
           )}
-        </div>
-      </section>
+        </section>
 
-      <section className="panel surface">
-        <div className="panel-head">
-          <div>
-            <p className="eyebrow">Visited</p>
-            <h3>Places you have been</h3>
+        <hr className="divider" />
+
+        <section className="saved-section">
+          <div className="section-header">
+            <span className="section-title">✓ Visited</span>
+            <span className="section-count">{visited.length}</span>
           </div>
-          <div className="panel-mini-meta">{visitedList.length} visited</div>
-        </div>
-        <div className="saved-list">
-          {visitedList.length ? (
-            visitedList.map((spot) => (
-              <SpotRow key={spot.id} spot={spot} onOpenSpot={onOpenSpot} />
-            ))
+          {visited.length === 0 ? (
+            <div className="empty-state surface">
+              <div className="empty-state-icon">🧭</div>
+              <p>No visits logged yet — mark spots after you go.</p>
+            </div>
           ) : (
-            <p className="panel-copy">
-              No visits logged. Mark spots as visited after you go.
-            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {visited.map((s) => <SpotRow key={s.id} spot={s} onOpenSpot={onOpenSpot} />)}
+            </div>
           )}
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
   );
 }

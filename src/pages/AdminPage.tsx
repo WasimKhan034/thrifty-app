@@ -10,55 +10,54 @@ interface AdminPageProps {
 export function AdminPage({ currentUser, pendingSpots, onApprove, onReject }: AdminPageProps) {
   if (!currentUser || currentUser.role !== "admin") {
     return (
-      <section className="panel surface">
-        <div className="panel-head">
-          <div>
-            <p className="eyebrow">Admin</p>
-            <h3>Approval queue</h3>
-          </div>
+      <div className="page-content">
+        <div className="empty-state surface" style={{ maxWidth: 400, margin: "32px auto" }}>
+          <div className="empty-state-icon">🔒</div>
+          <p>Admin access required. Sign in with an admin account.</p>
         </div>
-        <p className="panel-copy">Admin access is required here. Sign in with an admin account to moderate submissions.</p>
-      </section>
+      </div>
     );
   }
 
   return (
-    <section className="panel surface">
-      <div className="panel-head">
-        <div>
-          <p className="eyebrow">Admin</p>
-          <h3>Pending submissions</h3>
-        </div>
-        <div className="panel-mini-meta">{pendingSpots.length} waiting</div>
+    <div className="page-content">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <h3>Pending submissions</h3>
+        <span className="section-count">{pendingSpots.length} waiting</span>
       </div>
 
-      <div className="saved-list">
-        {pendingSpots.length ? (
-          pendingSpots.map((spot) => (
-            <article key={spot.id} className="review-card surface-subtle">
-              <div className="review-topline">
-                <strong>{spot.name}</strong>
-                <span>{spot.city}</span>
+      {pendingSpots.length === 0 ? (
+        <div className="empty-state surface">
+          <div className="empty-state-icon">✓</div>
+          <p>All clear — no pending submissions.</p>
+        </div>
+      ) : (
+        <div className="admin-list">
+          {pendingSpots.map((spot) => (
+            <article key={spot.id} className="admin-card surface">
+              <div className="admin-card-head">
+                <div>
+                  <div style={{ fontWeight: 600 }}>{spot.name}</div>
+                  <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: 2 }}>
+                    {spot.city} · {spot.type} · {spot.address}
+                  </div>
+                </div>
+                <div className="admin-card-actions">
+                  <button type="button" className="button button-primary" style={{ fontSize: "0.8rem", padding: "6px 14px" }} onClick={() => void onApprove(spot.id)}>
+                    Approve
+                  </button>
+                  <button type="button" className="button button-danger" style={{ fontSize: "0.8rem", padding: "6px 14px" }} onClick={() => void onReject(spot.id)}>
+                    Reject
+                  </button>
+                </div>
               </div>
-              <p>{spot.description}</p>
-              <div className="detail-meta">
-                <span>{spot.type}</span>
-                <span>{spot.address}</span>
-              </div>
-              <div className="detail-actions">
-                <button type="button" className="button button-primary" onClick={() => void onApprove(spot.id)}>
-                  Approve
-                </button>
-                <button type="button" className="button button-ghost" onClick={() => void onReject(spot.id)}>
-                  Reject
-                </button>
-              </div>
+              {spot.description && (
+                <div className="admin-card-body">{spot.description}</div>
+              )}
             </article>
-          ))
-        ) : (
-          <p className="panel-copy">No pending spot submissions right now.</p>
-        )}
-      </div>
-    </section>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

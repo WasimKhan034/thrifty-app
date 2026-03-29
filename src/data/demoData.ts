@@ -24,10 +24,8 @@ export const metrics: Array<{ key: keyof ReviewInput; label: string; hint: strin
 ];
 
 export const themes: Array<{ id: ThemeId; name: string }> = [
-  { id: "light", name: "Light" },
-  { id: "dark", name: "Dark" },
-  { id: "sepia", name: "Sepia" },
-  { id: "forest", name: "Forest" },
+  { id: "light", name: "Day" },
+  { id: "dark", name: "Night" },
 ];
 
 export const seedSpots: Spot[] = [

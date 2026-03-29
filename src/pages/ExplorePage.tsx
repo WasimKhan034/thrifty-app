@@ -33,47 +33,51 @@ function SpotCard({
   onToggleVisited: (spotId: string) => Promise<void>;
 }) {
   return (
-    <article className={`spot-card surface-subtle ${selectedSpotId === spot.id ? "selected" : ""}`}>
+    <article
+      className={`spot-card surface ${selectedSpotId === spot.id ? "selected" : ""}`}
+      onClick={() => setSelectedSpotId(spot.id)}
+      style={{ cursor: "pointer" }}
+    >
       <div className="spot-topline">
         <span className="spot-type">{spot.type}</span>
-        <button type="button" className="icon-button" onClick={() => void onToggleFavorite(spot.id)}>
-          {spot.isFavorite ? "★" : "☆"}
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <span className="score-chip">{spot.thriftScore.toFixed(1)}</span>
+          <button
+            type="button"
+            className={`icon-button ${spot.isFavorite ? "active" : ""}`}
+            onClick={(e) => { e.stopPropagation(); void onToggleFavorite(spot.id); }}
+            title={spot.isFavorite ? "Remove from favorites" : "Save to favorites"}
+          >
+            {spot.isFavorite ? "★" : "☆"}
+          </button>
+        </div>
       </div>
 
-      <button type="button" className="spot-main" onClick={() => setSelectedSpotId(spot.id)}>
-        <h4>{spot.name}</h4>
-        <p>
-          {spot.city}, {spot.region}
-        </p>
-        <p className="spot-description">{spot.description}</p>
-      </button>
-
-      <div className="spot-badges">
-        <span className="badge">Score {spot.thriftScore.toFixed(1)}</span>
-        <span className="badge">{spot.reviewCount} reviews</span>
-        {spot.distance !== null ? <span className="badge">{spot.distance.toFixed(1)} mi</span> : null}
+      <div>
+        <div className="spot-title">{spot.name}</div>
+        <div className="spot-meta">
+          {spot.city}{spot.distance !== null ? ` · ${spot.distance.toFixed(1)} mi` : ""} · {spot.reviewCount} review{spot.reviewCount !== 1 ? "s" : ""}
+        </div>
       </div>
 
-      <div className="spot-tags">
-        {spot.tags.slice(0, 3).map((tag) => (
-          <span key={tag} className="tag">
-            {tag}
-          </span>
-        ))}
-      </div>
-
-      <div className="spot-actions">
-        <button type="button" className="button button-secondary" onClick={() => setSelectedSpotId(spot.id)}>
-          Details
-        </button>
-        <button type="button" className="button button-ghost" onClick={() => void onToggleVisited(spot.id)}>
-          {spot.isVisited ? "Visited" : "Mark visited"}
-        </button>
-      </div>
+      {spot.price && (
+        <div className="spot-badges">
+          <span className="badge">{spot.price}</span>
+          {spot.isVisited && <span className="badge badge-accent">Visited</span>}
+        </div>
+      )}
     </article>
   );
 }
+
+const METRIC_LABELS: Record<string, string> = {
+  vintageDepth: "Vintage depth",
+  priceLuck: "Price luck",
+  selectionDepth: "Selection",
+  curation: "Curation",
+  access: "Access",
+  vibe: "Vibe",
+};
 
 function DetailPanel({
   spot,
@@ -86,72 +90,84 @@ function DetailPanel({
 }) {
   if (!spot) {
     return (
-      <aside className="panel surface">
-        <div className="panel-head">
-          <div>
-            <p className="eyebrow">Details</p>
-            <h3>Select a place</h3>
-          </div>
-        </div>
-        <p className="panel-copy">Choose any card or map marker to inspect the full thrift score breakdown.</p>
+      <aside className="panel surface detail-panel" style={{ color: "var(--text-muted)", textAlign: "center", padding: 32 }}>
+        <div style={{ fontSize: "2rem", opacity: 0.3, marginBottom: 8 }}>🗺</div>
+        <p style={{ fontSize: "0.85rem" }}>Tap a spot to see the full breakdown</p>
       </aside>
     );
   }
 
   return (
-    <aside className="panel surface">
+    <aside className="panel surface detail-panel">
       <div className="panel-head">
         <div>
-          <p className="eyebrow">Details</p>
-          <h3>{spot.name}</h3>
+          <span className="spot-type">{spot.type}</span>
+          <h3 style={{ marginTop: 2 }}>{spot.name}</h3>
         </div>
-        <span className="score-chip">{spot.thriftScore.toFixed(1)}</span>
+        <span className="score-chip" style={{ fontSize: "1.1rem" }}>{spot.thriftScore.toFixed(1)}</span>
       </div>
 
-      <div className="detail-stack">
-        <p className="detail-address">{spot.address}</p>
-        <p className="detail-description">{spot.description}</p>
-        <div className="detail-meta">
-          <span>{spot.type}</span>
-          <span>{spot.price}</span>
-          <span>{spot.reviewCount} reviews</span>
-          {spot.distance !== null ? <span>{spot.distance.toFixed(1)} mi away</span> : null}
-        </div>
-        <div className="detail-meta">
-          <span>Best for {spot.bestFor}</span>
-        </div>
+      <p className="panel-copy">{spot.description}</p>
 
-        <div className="metric-list">
-          {Object.entries(spot.metricAverages).map(([key, value]) => (
-            <div key={key} className="metric-row">
-              <div className="metric-labels">
-                <strong>{key}</strong>
-                <span>{value.toFixed(1)} / 5</span>
+      <div className="panel-meta">
+        <span className="badge">{spot.address}</span>
+        {spot.price && <span className="badge">{spot.price}</span>}
+        {spot.distance !== null && <span className="badge">{spot.distance.toFixed(1)} mi</span>}
+        <span className="badge">{spot.reviewCount} review{spot.reviewCount !== 1 ? "s" : ""}</span>
+      </div>
+
+      <div className="panel-actions">
+        <button
+          type="button"
+          className={`button ${spot.isFavorite ? "button-primary" : "button-secondary"}`}
+          onClick={() => void onToggleFavorite(spot.id)}
+        >
+          {spot.isFavorite ? "★ Saved" : "☆ Save"}
+        </button>
+        <button
+          type="button"
+          className={`button ${spot.isVisited ? "button-primary" : "button-secondary"}`}
+          onClick={() => void onToggleVisited(spot.id)}
+        >
+          {spot.isVisited ? "✓ Visited" : "Mark visited"}
+        </button>
+        <a
+          className="button button-ghost"
+          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot.address)}`}
+          target="_blank"
+          rel="noreferrer"
+          onClick={(e) => e.stopPropagation()}
+        >
+          Maps ↗
+        </a>
+      </div>
+
+      {Object.keys(spot.metricAverages).length > 0 && (
+        <div className="panel-section">
+          <p className="panel-label">Score breakdown</p>
+          <div className="metric-list">
+            {Object.entries(spot.metricAverages).map(([key, value]) => (
+              <div key={key} className="metric-row">
+                <div className="metric-labels">
+                  <strong>{METRIC_LABELS[key] ?? key}</strong>
+                  <span>{value.toFixed(1)}</span>
+                </div>
+                <div className="metric-track">
+                  <div className="metric-fill" style={{ width: `${(value / 5) * 100}%` }} />
+                </div>
               </div>
-              <div className="metric-track">
-                <div className="metric-fill" style={{ width: `${(value / 5) * 100}%` }} />
-              </div>
-            </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {spot.tags && spot.tags.length > 0 && (
+        <div className="spot-badges">
+          {spot.tags.map((tag) => (
+            <span key={tag} className="badge">{tag}</span>
           ))}
         </div>
-
-        <div className="detail-actions">
-          <button type="button" className="button button-secondary" onClick={() => void onToggleFavorite(spot.id)}>
-            {spot.isFavorite ? "Saved" : "Save favorite"}
-          </button>
-          <button type="button" className="button button-ghost" onClick={() => void onToggleVisited(spot.id)}>
-            {spot.isVisited ? "Visited" : "Mark visited"}
-          </button>
-          <a
-            className="button button-ghost"
-            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot.address)}`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Open in Maps
-          </a>
-        </div>
-      </div>
+      )}
     </aside>
   );
 }
@@ -174,134 +190,108 @@ export function ExplorePage(props: ExplorePageProps) {
   } = props;
 
   return (
-    <>
-      <section className="controls-shell surface">
-        <div className="search-block">
-          <label htmlFor="search">Search</label>
+    <div className="page-content">
+      {/* Filters */}
+      <div className="controls-shell">
+        <div className="search-row">
           <input
-            id="search"
             value={filters.search}
-            onChange={(event) => setFilters((current) => ({ ...current, search: event.target.value }))}
-            placeholder="Search by store, city, address, or vibe"
+            onChange={(e) => setFilters((c) => ({ ...c, search: e.target.value }))}
+            placeholder="Search by name, city, or vibe..."
+            style={{ fontSize: "0.88rem" }}
           />
+          <button type="button" className="button button-secondary" onClick={onFindNearMe}>
+            {userLocation ? "↻ Near me" : "📍 Near me"}
+          </button>
         </div>
 
-        <div className="control-grid">
-          <label>
-            <span>Type</span>
-            <select
-              value={filters.type}
-              onChange={(event) => setFilters((current) => ({ ...current, type: event.target.value as AppFilters["type"] }))}
-            >
-              {typeOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </label>
+        <div className="filter-row">
+          <select
+            className="filter-select"
+            value={filters.type}
+            onChange={(e) => setFilters((c) => ({ ...c, type: e.target.value as AppFilters["type"] }))}
+          >
+            {typeOptions.map((o) => <option key={o} value={o === "All Types" ? "" : o}>{o}</option>)}
+          </select>
 
-          <label>
-            <span>Region</span>
-            <select
-              value={filters.region}
-              onChange={(event) => setFilters((current) => ({ ...current, region: event.target.value }))}
-            >
-              {regionOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </label>
+          <select
+            className="filter-select"
+            value={filters.region}
+            onChange={(e) => setFilters((c) => ({ ...c, region: e.target.value }))}
+          >
+            {regionOptions.map((o) => <option key={o} value={o}>{o}</option>)}
+          </select>
 
-          <label>
-            <span>Sort</span>
-            <select
-              value={filters.sortBy}
-              onChange={(event) =>
-                setFilters((current) => ({ ...current, sortBy: event.target.value as AppFilters["sortBy"] }))
-              }
-            >
-              <option value="score">Top score</option>
-              <option value="distance">Nearest</option>
-              <option value="reviews">Most reviewed</option>
-              <option value="recent">Newest</option>
-              <option value="name">Name</option>
-            </select>
-          </label>
+          <select
+            className="filter-select"
+            value={filters.sortBy}
+            onChange={(e) => setFilters((c) => ({ ...c, sortBy: e.target.value as AppFilters["sortBy"] }))}
+          >
+            <option value="score">Top score</option>
+            <option value="distance">Nearest</option>
+            <option value="reviews">Most reviewed</option>
+            <option value="recent">Newest</option>
+            <option value="name">A–Z</option>
+          </select>
 
-          <label>
-            <span>Radius</span>
-            <select
-              value={filters.radius}
-              onChange={(event) =>
-                setFilters((current) => ({ ...current, radius: event.target.value as AppFilters["radius"] }))
-              }
-            >
-              <option value="">All distances</option>
-              <option value="5">Within 5 miles</option>
-              <option value="15">Within 15 miles</option>
-              <option value="30">Within 30 miles</option>
-              <option value="60">Within 60 miles</option>
-            </select>
-          </label>
-        </div>
-
-        <div className="toggle-row">
           <button
             type="button"
             className={`toggle-pill ${filters.favoritesOnly ? "active" : ""}`}
-            onClick={() => setFilters((current) => ({ ...current, favoritesOnly: !current.favoritesOnly }))}
+            onClick={() => setFilters((c) => ({ ...c, favoritesOnly: !c.favoritesOnly }))}
           >
-            Favorites only
+            ★ Saved
           </button>
+
           <button
             type="button"
             className={`toggle-pill ${filters.visitedOnly ? "active" : ""}`}
-            onClick={() => setFilters((current) => ({ ...current, visitedOnly: !current.visitedOnly }))}
+            onClick={() => setFilters((c) => ({ ...c, visitedOnly: !c.visitedOnly }))}
           >
-            Visited only
+            ✓ Visited
           </button>
-          <button type="button" className="button button-secondary" onClick={onFindNearMe}>
-            {userLocation ? "Refresh near me" : "Find near me"}
-          </button>
-          <button type="button" className="button button-ghost" onClick={() => setMapView({ lat: 34.03, lng: -118.2, zoom: 8 })}>
-            SoCal
-          </button>
-          <button
-            type="button"
-            className="button button-ghost"
-            onClick={() => setMapView({ lat: 36.7783, lng: -119.4179, zoom: 6 })}
-          >
-            California
-          </button>
-          <button type="button" className="button button-ghost" onClick={onResetBrowse}>
-            Reset
-          </button>
+
+          {(filters.search || filters.type || filters.region !== "All California" || filters.favoritesOnly || filters.visitedOnly) && (
+            <button type="button" className="toggle-pill" onClick={onResetBrowse}>
+              × Clear
+            </button>
+          )}
         </div>
-      </section>
+      </div>
 
-      <div className="explore-grid">
+      {/* Main layout */}
+      <div className="explore-layout">
         <div className="explore-main">
-          <MapPanel
-            spots={spots}
-            selectedSpot={selectedSpot}
-            userLocation={userLocation}
-            mapView={mapView}
-            onSelectSpot={setSelectedSpotId}
-          />
+          <div className="map-shell">
+            <MapPanel
+              spots={spots}
+              selectedSpot={selectedSpot}
+              userLocation={userLocation}
+              mapView={mapView}
+              onSelectSpot={setSelectedSpotId}
+            />
+          </div>
 
-          <section className="panel surface">
-            <div className="panel-head">
-              <div>
-                <p className="eyebrow">Results</p>
-                <h3>Stores worth checking</h3>
-              </div>
-              <div className="panel-mini-meta">{spots.length} results</div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+              {spots.length} spot{spots.length !== 1 ? "s" : ""} found
+            </span>
+            <div style={{ display: "flex", gap: 6 }}>
+              <button type="button" className="toggle-pill" onClick={() => setMapView({ lat: 34.03, lng: -118.2, zoom: 9 })}>SoCal</button>
+              <button type="button" className="toggle-pill" onClick={() => setMapView({ lat: 37.77, lng: -122.41, zoom: 11 })}>SF</button>
+              <button type="button" className="toggle-pill" onClick={() => setMapView({ lat: 36.78, lng: -119.42, zoom: 6 })}>All CA</button>
             </div>
+          </div>
 
-            <div className="spot-grid">
+          {spots.length === 0 ? (
+            <div className="empty-state surface">
+              <div className="empty-state-icon">🧺</div>
+              <p>No spots match your filters.</p>
+              <button type="button" className="button button-secondary" style={{ marginTop: 10 }} onClick={onResetBrowse}>
+                Clear filters
+              </button>
+            </div>
+          ) : (
+            <div className="spot-list">
               {spots.map((spot) => (
                 <SpotCard
                   key={spot.id}
@@ -313,7 +303,7 @@ export function ExplorePage(props: ExplorePageProps) {
                 />
               ))}
             </div>
-          </section>
+          )}
         </div>
 
         <DetailPanel
@@ -322,6 +312,6 @@ export function ExplorePage(props: ExplorePageProps) {
           onToggleVisited={onToggleVisited}
         />
       </div>
-    </>
+    </div>
   );
 }

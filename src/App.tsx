@@ -16,17 +16,6 @@ function AppRoutes() {
     document.body.setAttribute("data-theme", app.theme);
   }, [app.theme]);
 
-  const stats = {
-    total: app.approvedSpots.length,
-    avgScore: app.approvedSpots.length
-      ? (
-          app.approvedSpots.reduce((sum, spot) => sum + spot.thriftScore, 0) / app.approvedSpots.length
-        ).toFixed(1)
-      : "0.0",
-    favorites: app.approvedSpots.filter((spot) => spot.isFavorite).length,
-    pending: app.pendingSpots.length,
-  };
-
   async function guardedAction(action: () => Promise<void>) {
     try {
       await action();
@@ -39,25 +28,6 @@ function AppRoutes() {
   return (
     <>
       <AppFrame theme={app.theme} onThemeChange={app.setTheme} currentUser={app.currentUser} onSignOut={() => void guardedAction(app.signOut)} />
-      <section className="status-banner surface-subtle">{app.statusMessage}</section>
-      <section className="stats-grid">
-        <div className="stat-card surface-subtle">
-          <span>{stats.total}</span>
-          <p>approved spots</p>
-        </div>
-        <div className="stat-card surface-subtle">
-          <span>{stats.avgScore}</span>
-          <p>average thrift score</p>
-        </div>
-        <div className="stat-card surface-subtle">
-          <span>{stats.favorites}</span>
-          <p>favorites saved</p>
-        </div>
-        <div className="stat-card surface-subtle">
-          <span>{stats.pending}</span>
-          <p>pending approval</p>
-        </div>
-      </section>
 
       <Routes>
         <Route

@@ -1,6 +1,6 @@
 export type SpotType = "Thrift Store" | "Flea Market" | "Pop-Up";
 export type SpotStatus = "approved" | "pending" | "rejected";
-export type ThemeId = "light" | "dark" | "sepia" | "forest";
+export type ThemeId = "light" | "dark";
 
 export interface UserProfile {
   id: string;
