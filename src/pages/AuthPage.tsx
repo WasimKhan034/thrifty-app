@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import type { UserProfile } from "../types/domain";
 
 interface AuthPageProps {
@@ -8,19 +9,32 @@ interface AuthPageProps {
 }
 
 export function AuthPage({ currentUser, onSignUp, onSignIn }: AuthPageProps) {
+  const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (mode === "signup") {
-      await onSignUp(name, email, password);
-    } else {
-      await onSignIn(email, password);
+    setError("");
+    setLoading(true);
+    try {
+      if (mode === "signup") {
+        await onSignUp(name, email, password);
+      } else {
+        await onSignIn(email, password);
+      }
+      // Navigate home after successful auth
+      navigate("/");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+      setPassword("");
     }
-    setPassword("");
   };
 
   if (currentUser) {
@@ -29,7 +43,7 @@ export function AuthPage({ currentUser, onSignUp, onSignIn }: AuthPageProps) {
         <div className="auth-wrap">
           <div className="auth-form surface">
             <div className="auth-header">
-              <div className="empty-state-icon">✓</div>
+              <div style={{ fontSize: "2rem" }}>✓</div>
               <h3>Signed in as {currentUser.name}</h3>
               <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: 0 }}>
                 {currentUser.email}
@@ -37,6 +51,14 @@ export function AuthPage({ currentUser, onSignUp, onSignIn }: AuthPageProps) {
                   <span className="role-badge" style={{ marginLeft: 8 }}>admin</span>
                 )}
               </p>
+              <button
+                type="button"
+                className="button button-primary"
+                style={{ marginTop: 8 }}
+                onClick={() => navigate("/")}
+              >
+                Go to Explore →
+              </button>
             </div>
           </div>
         </div>
@@ -62,7 +84,7 @@ export function AuthPage({ currentUser, onSignUp, onSignIn }: AuthPageProps) {
               type="button"
               className={`button ${mode === "signin" ? "button-primary" : "button-secondary"}`}
               style={{ flex: 1 }}
-              onClick={() => setMode("signin")}
+              onClick={() => { setMode("signin"); setError(""); }}
             >
               Sign in
             </button>
@@ -70,11 +92,24 @@ export function AuthPage({ currentUser, onSignUp, onSignIn }: AuthPageProps) {
               type="button"
               className={`button ${mode === "signup" ? "button-primary" : "button-secondary"}`}
               style={{ flex: 1 }}
-              onClick={() => setMode("signup")}
+              onClick={() => { setMode("signup"); setError(""); }}
             >
               Create account
             </button>
           </div>
+
+          {error && (
+            <div style={{
+              background: "color-mix(in srgb, #ef4444 12%, var(--surface))",
+              border: "1px solid color-mix(in srgb, #ef4444 30%, var(--border))",
+              borderRadius: 8,
+              padding: "10px 14px",
+              fontSize: "0.85rem",
+              color: "#dc2626",
+            }}>
+              {error}
+            </div>
+          )}
 
           <form className="auth-fields" onSubmit={submit}>
             {mode === "signup" && (
@@ -85,6 +120,7 @@ export function AuthPage({ currentUser, onSignUp, onSignIn }: AuthPageProps) {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
+                  disabled={loading}
                 />
               </div>
             )}
@@ -96,6 +132,7 @@ export function AuthPage({ currentUser, onSignUp, onSignIn }: AuthPageProps) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={loading}
               />
             </div>
             <div className="form-field">
@@ -106,10 +143,16 @@ export function AuthPage({ currentUser, onSignUp, onSignIn }: AuthPageProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={loading}
               />
             </div>
-            <button type="submit" className="button button-primary" style={{ width: "100%" }}>
-              {mode === "signup" ? "Create account →" : "Sign in →"}
+            <button
+              type="submit"
+              className="button button-primary"
+              style={{ width: "100%" }}
+              disabled={loading}
+            >
+              {loading ? "Please wait…" : mode === "signup" ? "Create account →" : "Sign in →"}
             </button>
           </form>
         </div>

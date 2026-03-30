@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { metrics } from "../data/demoData";
 import { repository } from "../services/repository";
+import { hasSupabaseEnv, supabase } from "../lib/supabase";
 import type {
   AppFilters,
   EnrichedSpot,
@@ -107,6 +108,33 @@ export function useThriftyApp() {
       .catch(() => {
         setStatusMessage("Failed to load. Please refresh.");
       });
+  }, []);
+
+  // Keep auth state in sync with Supabase session (handles token refresh, sign-out in other tabs, etc.)
+  useEffect(() => {
+    if (!hasSupabaseEnv || !supabase) return;
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
+      if (event === "SIGNED_OUT") {
+        setCurrentUser(null);
+        setFavorites([]);
+        setVisited([]);
+      } else if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        // Re-fetch the full snapshot so spots + favorites stay fresh after a re-login
+        try {
+          const snap = await repository.getSnapshot();
+          setCurrentUser(snap.currentUser);
+          setApprovedSpots(snap.approvedSpots);
+          setPendingSpots(snap.pendingSpots);
+          setFavorites(snap.favorites);
+          setVisited(snap.visited);
+        } catch {
+          // silent — snapshot errors are already handled at mount
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   // Enrich spots with computed fields

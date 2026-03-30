@@ -352,15 +352,40 @@ const supabaseRepository: ThriftyRepository = {
       email: input.email,
       password: input.password,
     });
-    if (error || !data.user) throw new Error(error?.message ?? "Incorrect email or password.");
 
-    const { data: profile, error: profileError } = await supabase
+    if (error) {
+      // Provide a friendlier message for the most common Supabase error
+      if (error.message.toLowerCase().includes("email not confirmed")) {
+        throw new Error("Please check your inbox and confirm your email before signing in.");
+      }
+      throw new Error(error.message ?? "Incorrect email or password.");
+    }
+    if (!data.user) throw new Error("Sign in failed. Please try again.");
+
+    const { data: profile } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", data.user.id)
       .single();
 
-    if (profileError || !profile) throw new Error("Profile not found. Please sign up first.");
+    // If profile row is missing (e.g. created before RLS was set up), create it on the fly
+    if (!profile) {
+      const role: "admin" | "member" =
+        data.user.email?.toLowerCase().trim() === ADMIN_EMAIL ? "admin" : "member";
+      await supabase.from("profiles").insert({
+        id: data.user.id,
+        full_name: data.user.email?.split("@")[0] ?? "Thrifter",
+        email: data.user.email ?? input.email,
+        role,
+      });
+      return {
+        id: data.user.id,
+        name: data.user.email?.split("@")[0] ?? "Thrifter",
+        email: data.user.email ?? input.email,
+        role,
+        createdAt: data.user.created_at,
+      };
+    }
 
     return {
       id: profile.id as string,

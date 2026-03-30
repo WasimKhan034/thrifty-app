@@ -89,8 +89,8 @@ function AppRoutes() {
           element={
             <AuthPage
               currentUser={app.currentUser}
-              onSignUp={(name, email, password) => guardedAction(() => app.signUp(name, email, password))}
-              onSignIn={(email, password) => guardedAction(() => app.signIn(email, password))}
+              onSignUp={app.signUp}
+              onSignIn={app.signIn}
             />
           }
         />

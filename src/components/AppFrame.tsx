@@ -18,7 +18,7 @@ export function AppFrame({ theme, onThemeChange, currentUser, onSignOut }: AppFr
             <div className="brand-badge">T</div>
             <div>
               <div className="brand-name">Thrifty</div>
-              <div className="brand-sub">California vintage finder</div>
+              <div className="brand-sub">Yelp for thrifters</div>
             </div>
           </div>
 
