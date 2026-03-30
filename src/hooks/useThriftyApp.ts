@@ -221,9 +221,9 @@ export function useThriftyApp() {
   const signIn = useCallback(async (email: string, password: string) => {
     const user = await repository.signIn({ email, password });
     setCurrentUser(user);
-    await refreshSnapshot();
     setStatusMessage(`Welcome back, ${user.name}!`);
-  }, [refreshSnapshot]);
+    // onAuthStateChange listener handles refreshing spots/favorites in the background
+  }, []);
 
   const signOut = useCallback(async () => {
     await repository.signOut();

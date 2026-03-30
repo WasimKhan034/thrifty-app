@@ -1,4 +1,4 @@
-export type SpotType = "Thrift Store" | "Flea Market" | "Pop-Up";
+export type SpotType = "Thrift Store" | "Vintage Shop" | "Flea Market" | "Pop-Up" | "Cinema" | "Coffee Shop" | "Destination";
 export type SpotStatus = "approved" | "pending" | "rejected";
 export type ThemeId = "light" | "dark";
 

@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { metrics, regionOptions } from "../data/demoData";
+import { metrics, regionOptions, typeOptions } from "../data/demoData";
 import type { EnrichedSpot, ReviewInput, SpotSubmissionInput, SpotType } from "../types/domain";
 
 interface ContributePageProps {
@@ -124,9 +124,9 @@ export function ContributePage({ spots, selectedSpotId, onSubmitSpot, onAddRevie
               <div className="form-field">
                 <label>Type</label>
                 <select value={spotForm.type} onChange={(e) => setSpotForm((c) => ({ ...c, type: e.target.value as SpotType }))}>
-                  <option value="Thrift Store">Thrift Store</option>
-                  <option value="Flea Market">Flea Market</option>
-                  <option value="Pop-Up">Pop-Up</option>
+                  {typeOptions.filter(t => t !== "All Types").map(t => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
                 </select>
               </div>
             </div>
