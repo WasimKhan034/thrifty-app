@@ -11,7 +11,7 @@ create table if not exists public.profiles (
 create table if not exists public.spots (
   id uuid primary key default gen_random_uuid(),
   name text not null,
-  type text not null check (type in ('Thrift Store', 'Flea Market', 'Pop-Up')),
+  type text not null check (type in ('Thrift Store', 'Vintage Shop', 'Flea Market', 'Pop-Up', 'Cinema', 'Coffee Shop', 'Destination')),
   city text not null,
   region text not null,
   address text not null,
